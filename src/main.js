@@ -78,18 +78,17 @@ r.onload = function(e) {
 		// make everything lowercase
 		nl[c] = nl[c].toLowerCase();
 
-		// check if this line is a G0 command
-		if (nl[c].substr(0,3) == 'g0 ') {
+		// check if this line is a G0 or G1 command
+    var command = nl[c].substr(0,3)
+		if ( command == 'g0 ' || command == 'g1 ') {
 
-			console.log('found g0');
-
-			// this line is a G0 command, get the X and Y values
+			// get the X and Y values
 			var xy = getXY(nl[c]);
 			var x = xy[0];
 			var y = xy[1];
 
 			// check if x or y exist for this line
-			if ((x !== false || y !== false) && (x !== false && y !== false)) {
+			if (x !== false && y !== false) {
 				// if x or y here is false we need to use the last coordinate from the previous G0 or G1 in followingLines as that is where the machine would be
 				if (y === false && allG0.length > 0) {
 					// loop through allG0[-1].followingLines to find the most recent G0 or G1 with a y coordinate
@@ -215,7 +214,7 @@ r.onload = function(e) {
 }
 });
 
-  $('#start_btn').click(function() { 
+  $('#start_btn').click(function() {
     if(points.length >= 3) {
       initData();
       GAInitialize();
