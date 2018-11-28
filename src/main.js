@@ -1,6 +1,7 @@
 var canvas, ctx;
 var WIDTH, HEIGHT;
 var points = [];
+var constrainedLines = [];
 var running;
 var ran = false;
 var validFile = false;
@@ -101,7 +102,7 @@ r.onload = function(e) {
 
 
 				// this G0 has a valid X or Y coordinate, add it to verts with itself (the G0) as the first entry in followingLines
-				verts.push({x:x,y:y,followingLines:[nl[c]]});
+				verts.push({x:x,y:y,followingLines:[nl[c]], isG1: command == 'g1 '});
 
 				// reset otherCommands
 				otherCommands = [];
@@ -142,6 +143,8 @@ r.onload = function(e) {
 
 	console.log('priorToG0',priorToG0);
 	console.log('verts',verts);
+
+
 
 	var minX = verts[0].x;
 	var minY = verts[0].y;
@@ -187,6 +190,16 @@ r.onload = function(e) {
 		verts[p].y = 600 - verts[p].y;
 
 	}
+
+  constrainedLines = [];
+  // find pairs of g1s
+  for (var i = 0; i<verts.length - 1; i++) {
+    if (verts[i].isG1 == true) {
+      if (verts[i+1].isG1) {
+        constrainedLines.push([verts[i], verts[i+1]])
+      }
+    }
+  }
 
 	points = verts;
 	draw();
@@ -311,6 +324,22 @@ function drawLines(array) {
   ctx.closePath();
 }
 
+function drawConstrainedLines(pairs) {
+    ctx.strokeStyle = '#404040';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    // move to the first point in pairs
+    for(var i = 0; i<pairs.length; i++) {
+      start = pairs[i][0];
+      end = pairs[i][1];
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+      ctx.closePath();
+    }
+}
+
 function draw() {
 
   if(running) {
@@ -335,6 +364,8 @@ function draw() {
     if(best.length === points.length) {
       drawLines(best);
     }
+
+    drawConstrainedLines(constrainedLines)
   }
 
 }
