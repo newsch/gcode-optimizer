@@ -22,7 +22,6 @@ with open(args.filename) as file:
                 # print out original line
                 print(line, end='')
         else:
-            print(line.upper().strip() == UP)
             if line.upper().strip() == UP:
                 is_up = True
             if line.upper().strip() == DOWN:
