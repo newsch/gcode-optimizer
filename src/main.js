@@ -87,26 +87,8 @@ r.onload = function(e) {
 			var x = xy[0];
 			var y = xy[1];
 
-			// check if x or y exist for this line
+			// check if x and y exist for this line
 			if (x !== false && y !== false) {
-				// if x or y here is false we need to use the last coordinate from the previous G0 or G1 in followingLines as that is where the machine would be
-				if (y === false && allG0.length > 0) {
-					// loop through allG0[-1].followingLines to find the most recent G0 or G1 with a y coordinate
-					for (var h=0; h<allG0[-1].followingLines.length; h++) {
-						if ((allG0[-1].followingLines[h].substr(0,3) == 'g0 ' || allG0[-1].followingLines[h].substr(0,3) == 'g1 ') && allG0[-1].followingLines[h].match(/ y/)) {
-							// set this y coordinate as y
-							y = getXY(allG0[-1].followingLines[h])[1];
-						}
-					}
-				} else if (x === false && allG0.length > 0) {
-					// loop through allG0[-1].followingLines to find the most recent G0 or G1 with a x coordinate
-					for (var h=0; h<allG0[-1].followingLines.length; h++) {
-						if ((allG0[-1].followingLines[h].substr(0,3) == 'g0 ' || allG0[-1].followingLines[h].substr(0,3) == 'g1 ') && allG0[-1].followingLines[h].match(/ x/)) {
-							// set this x coordinate as x
-							x = getXY(allG0[-1].followingLines[h])[0];
-						}
-					}
-				}
 
 				if (allG0.length > 0) {
 
