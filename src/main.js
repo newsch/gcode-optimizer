@@ -191,8 +191,8 @@ r.onload = function(e) {
 
 	}
 
-  constrainedLines = [];
   // find pairs of g1s
+  constrainedLines = [];
   for (var i = 0; i<verts.length - 1; i++) {
     if (verts[i].isG1 == true) {
       if (verts[i+1].isG1) {
@@ -201,7 +201,20 @@ r.onload = function(e) {
     }
   }
 
-	points = verts;
+  // remove excess nodes
+  for (var i = 1; i<verts.length - 1; i++) {
+    current = verts[i];
+    prev = verts[i-1];
+    // if the previous point is the same point
+    if (prev.x == current.x && prev.y == current.y) {
+      prev.followingLines.concat(current.followingLines)
+      verts[i] = false
+    }
+
+  }
+
+
+	points = verts.filter(Boolean);
 	draw();
 
 	validFile = true;
