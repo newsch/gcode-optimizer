@@ -64,8 +64,8 @@ r.onload = function(e) {
 
 	initData();
 
-	var notG0 = [];
-	var allG0 = [];
+	var otherCommands = [];
+	var verts = [];
 
 	// split the file by newlines
 	var nl = r.result.split('\n');
@@ -90,32 +90,32 @@ r.onload = function(e) {
 			// check if x and y exist for this line
 			if (x !== false && y !== false) {
 
-				if (allG0.length > 0) {
+				if (verts.length > 0) {
 
-					// allG0 has entries, so we need to add notG0 to the followingLines for the previous entry in allG0
-					for (var mm=0; mm<notG0.length; mm++) {
-						allG0[allG0.length-1].followingLines.push(notG0[mm]);
+					// verts has entries, so we need to add otherCommands to the followingLines for the previous entry in verts
+					for (var cmd=0; cmd<otherCommands.length; cmd++) {
+						verts[verts.length-1].followingLines.push(otherCommands[cmd]);
 					}
 
 				}
 
 
-				// this G0 has a valid X or Y coordinate, add it to allG0 with itself (the G0) as the first entry in followingLines
-				allG0.push({x:x,y:y,followingLines:[nl[c]]});
+				// this G0 has a valid X or Y coordinate, add it to verts with itself (the G0) as the first entry in followingLines
+				verts.push({x:x,y:y,followingLines:[nl[c]]});
 
-				// reset notG0
-				notG0 = [];
+				// reset otherCommands
+				otherCommands = [];
 
 			} else {
 				// there is no X or Y coordinate for this G0, we can just add it as a normal line
-				notG0.push(nl[c]);
+				otherCommands.push(nl[c]);
 			}
 		} else {
-			// add this line to notG0
-			notG0.push(nl[c]);
+			// add this line to otherCommands
+			otherCommands.push(nl[c]);
 		}
 
-		if (allG0.length == 0) {
+		if (verts.length == 0) {
 			// this holds lines prior to the first G0 for use later
 			priorToG0.push(nl[c]);
 
@@ -123,41 +123,41 @@ r.onload = function(e) {
 
 	}
 
-	console.log(notG0);
+	console.log(otherCommands);
 
-	// add notG0 to the followingLines for the last entry in allG0
+	// add otherCommands to the followingLines for the last entry in verts
 	// this gets the lines after the last G0 in the file
 	// we also need to check if the commands here are not G0, G1, G2, G3, or G4
 	// because in this case they should be left at the end of the file, not put into the parent G0 block
-	for (var mm=0; mm<notG0.length; mm++) {
-		var sb = notG0[mm].substr(0,3);
+	for (var cmd=0; cmd<otherCommands.length; cmd++) {
+		var sb = otherCommands[cmd].substr(0,3);
 		if (sb == 'g0 ' || sb == 'g1 ' || sb == 'g2 ' || sb == 'g3 ' || sb == 'g4 ') {
 			// this should be added to the parent G0 block
-			allG0[allG0.length-1].followingLines.push(notG0[mm]);
+			verts[verts.length-1].followingLines.push(otherCommands[cmd]);
 		} else {
 			// this should be added to the end of the file as it was already there
-			eof.push(notG0[mm]);
+			eof.push(otherCommands[cmd]);
 		}
 	}
 
 	console.log('priorToG0',priorToG0);
-	console.log('allG0',allG0);
+	console.log('verts',verts);
 
-	var minX = allG0[0].x;
-	var minY = allG0[0].y;
-	var maxX = allG0[0].x;
-	var maxY = allG0[0].y;
+	var minX = verts[0].x;
+	var minY = verts[0].y;
+	var maxX = verts[0].x;
+	var maxY = verts[0].y;
 
-	for (var p=0; p<allG0.length; p++) {
-		if (allG0[p].x < minX) {
-			minX = allG0[p].x;
-		} else if (allG0[p].x > maxX) {
-			maxX = allG0[p].x;
+	for (var p=0; p<verts.length; p++) {
+		if (verts[p].x < minX) {
+			minX = verts[p].x;
+		} else if (verts[p].x > maxX) {
+			maxX = verts[p].x;
 		}
-		if (allG0[p].y < minY) {
-			minY = allG0[p].y;
-		} else if (allG0[p].y > maxY) {
-			maxY = allG0[p].y;
+		if (verts[p].y < minY) {
+			minY = verts[p].y;
+		} else if (verts[p].y > maxY) {
+			maxY = verts[p].y;
 		}
 
 	}
@@ -177,18 +177,18 @@ r.onload = function(e) {
 		sf = yf;
 	}
 
-	for (var p=0; p<allG0.length; p++) {
+	for (var p=0; p<verts.length; p++) {
 
 		// scale it
-		allG0[p].y = allG0[p].y*sf;
-		allG0[p].x = allG0[p].x*sf;
+		verts[p].y = verts[p].y*sf;
+		verts[p].x = verts[p].x*sf;
 
 		// flip the y axis because cnc and canvas world are opposite there
-		allG0[p].y = 600 - allG0[p].y;
+		verts[p].y = 600 - verts[p].y;
 
 	}
 
-	points = allG0;
+	points = verts;
 	draw();
 
 	validFile = true;
