@@ -17,8 +17,11 @@ var OX_CROSSOVER_RATE;
 var UNCHANGED_GENS;
 
 var mutationTimes;
-var dis;
-var bestValue, best;
+// cost between nodes
+var costs;
+// this contains the actual distance between points
+var distances;
+var bestValue, best, bestActualDistance;
 var currentGeneration;
 var currentBest;
 var population;
@@ -364,16 +367,16 @@ function draw() {
 
   if(running) {
     GANextGeneration();
-    $('#status').text("There are " + points.length + " G0 points, "
+    $('#status').text("There are " + points.length + " points, "
                       +"the " + currentGeneration + "th generation with "
                       + mutationTimes + " times of mutation. best value: "
-                      + ~~(bestValue));
+                      + ~~(bestActualDistance));
   } else {
-    if (currentGeneration && mutationTimes && bestValue) {
-      $('#status').text("There are " + points.length + " G0 points, "
+    if (currentGeneration && mutationTimes && bestActualDistance) {
+      $('#status').text("There are " + points.length + " points, "
                         +"the " + currentGeneration + "th generation with "
                         + mutationTimes + " times of mutation. best value: "
-                        + ~~(bestValue));
+                        + ~~(bestActualDistance));
     } else {
       $('#status').text("There are " + points.length + " points")
     }

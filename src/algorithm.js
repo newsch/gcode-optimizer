@@ -64,7 +64,7 @@ function getChild(fun, x, y) {
     dy = py[fun](py.indexOf(c));
     px.deleteByValue(c);
     py.deleteByValue(c);
-    c = dis[c][dx] < dis[c][dy] ? dx : dy;
+    c = costs[c][dx] < costs[c][dy] ? dx : dy;
     solution.push(c);
   }
   return solution;
@@ -111,16 +111,22 @@ function swapMutate(seq) {
 }
 function setBestValue() {
   for(var i=0; i<population.length; i++) {
-    values[i] = evaluate(population[i]);
+    values[i] = evaluate(population[i], costs);
   }
   currentBest = getCurrentBest();
   if(bestValue === undefined || bestValue > currentBest.bestValue) {
     best = population[currentBest.bestPosition].clone();
     bestValue = currentBest.bestValue;
+    bestActualDistance = evaluate(best, distances)
     UNCHANGED_GENS = 0;
   } else {
     UNCHANGED_GENS += 1;
   }
+}
+
+// Calculates the actual distance along a given path
+function calculateActualDistance(path) {
+  return 5;
 }
 function getCurrentBest() {
   var bestP = 0,
@@ -165,28 +171,31 @@ function randomIndivial(n) {
   }
   return a.shuffle();
 }
-function evaluate(indivial) {
-  var sum = dis[indivial[0]][indivial[indivial.length - 1]];
+function evaluate(indivial, costMatrix) {
+  var sum = costMatrix[indivial[0]][indivial[indivial.length - 1]];
   for(var i=1; i<indivial.length; i++) {
-    sum += dis[indivial[i]][indivial[i-1]];
+    sum += costMatrix[indivial[i]][indivial[i-1]];
   }
   return sum;
 }
 function countDistances() {
   var length = points.length;
-  dis = new Array(length);
+  costs = new Array(length);
+  distances = new Array(length);
   for(var i=0; i<length; i++) {
-    dis[i] = new Array(length);
+    costs[i] = new Array(length);
+    distances[i] = new Array(length);
     for(var j=0; j<length; j++) {
       // Check if the two points are already connected by a line
 
       if (areConnected(points[i], points[j]))  {
         // we give a big negative weight so that the algorithm has an incentive
         // to use this path
-        dis[i][j] = -1000;
+        costs[i][j] = -1000;
       } else {
-        dis[i][j] = ~~distance(points[i], points[j]);
+        costs[i][j] = ~~distance(points[i], points[j]);
       }
+      distances[i][j] = ~~distance(points[i], points[j]);
     }
   }
 }
