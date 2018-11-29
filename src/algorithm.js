@@ -11,23 +11,6 @@ function GANextGeneration() {
   crossover();
   mutation();
 
-  //if(UNCHANGED_GENS > POPULATION_SIZE + ~~(points.length/10)) {
-    //MUTATION_PROBABILITY = 0.05;
-    //if(doPreciseMutate) {
-    //  best = preciseMutate(best);
-    //  best = preciseMutate1(best);
-    //  if(evaluate(best) < bestValue) {
-    //    bestValue = evaluate(best);
-    //    UNCHANGED_GENS = 0;
-    //    doPreciseMutate = true;
-    //  } else {
-    //    doPreciseMutate = false;
-    //  }
-    //}
-  //} else {
-    //doPreciseMutate = 1;
-    //MUTATION_PROBABILITY = 0.01;
-  //}
   setBestValue();
 }
 function tribulate() {
@@ -60,28 +43,9 @@ function crossover() {
   queue.shuffle();
   for(var i=0, j=queue.length-1; i<j; i+=2) {
     doCrossover(queue[i], queue[i+1]);
-    //oxCrossover(queue[i], queue[i+1]);
   }
 }
-//function oxCrossover(x, y) {
-//  //var px = population[x].roll();
-//  //var py = population[y].roll();
-//  var px = population[x].slice(0);
-//  var py = population[y].slice(0);
 
-//  var rand = randomNumber(points.length-1) + 1;
-//  var pre_x = px.slice(0, rand);
-//  var pre_y = py.slice(0, rand);
-
-//  var tail_x = px.slice(rand, px.length);
-//  var tail_y = py.slice(rand, py.length);
-
-//  px = tail_x.concat(pre_x);
-//  py = tail_y.concat(pre_y);
-
-//  population[x] = pre_y.concat(px.reject(pre_y));
-//  population[y] = pre_x.concat(py.reject(pre_x));
-//}
 function doCrossover(x, y) {
   child1 = getChild('next', x, y);
   child2 = getChild('previous', x, y);
@@ -117,43 +81,7 @@ function mutation() {
     }
   }
 }
-function preciseMutate(orseq) {
-  var seq = orseq.clone();
-  if(Math.random() > 0.5){
-    seq.reverse();
-  }
-  var bestv = evaluate(seq);
-  for(var i=0; i<(seq.length>>1); i++) {
-    for(var j=i+2; j<seq.length-1; j++) {
-      var new_seq = swap_seq(seq, i,i+1,j,j+1);
-      var v = evaluate(new_seq);
-      if(v < bestv) {bestv = v, seq = new_seq; };
-    }
-  }
-  //alert(bestv);
-  return seq;
-}
-function preciseMutate1(orseq) {
-  var seq = orseq.clone();
-  var bestv = evaluate(seq);
 
-  for(var i=0; i<seq.length-1; i++) {
-    var new_seq = seq.clone();
-    new_seq.swap(i, i+1);
-    var v = evaluate(new_seq);
-    if(v < bestv) {bestv = v, seq = new_seq; };
-  }
-  //alert(bestv);
-  return seq;
-}
-function swap_seq(seq, p0, p1, q0, q1) {
-  var seq1 = seq.slice(0, p0);
-  var seq2 = seq.slice(p1+1, q1);
-  seq2.push(seq[p0]);
-  seq2.push(seq[p1]);
-  var seq3 = seq.slice(q1, seq.length);
-  return seq1.concat(seq2).concat(seq3);
-}
 function flipMutate(seq) {
   mutationTimes++;
   // m and n refers to the actual index in the array
