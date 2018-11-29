@@ -369,7 +369,15 @@ function draw() {
                       + mutationTimes + " times of mutation. best value: "
                       + ~~(bestValue));
   } else {
-    $('#status').text("There are " + points.length + " points")
+    if (currentGeneration && mutationTimes && bestValue) {
+      $('#status').text("There are " + points.length + " G0 points, "
+                        +"the " + currentGeneration + "th generation with "
+                        + mutationTimes + " times of mutation. best value: "
+                        + ~~(bestValue));
+    } else {
+      $('#status').text("There are " + points.length + " points")
+    }
+
   }
 
   clearCanvas();
