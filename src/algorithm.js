@@ -40,8 +40,8 @@ function selection() {
   var parents = new Array();
   var initnum = 4;
   parents.push(population[currentBest.bestPosition]);
-  parents.push(doMutate(best.clone()));
-  parents.push(pushMutate(best.clone()));
+  parents.push(flipMutate(best.clone()));
+  parents.push(swapMutate(best.clone()));
   parents.push(best.clone());
 
   setRoulette();
@@ -109,9 +109,9 @@ function mutation() {
   for(var i=0; i<POPULATION_SIZE; i++) {
     if(Math.random() < MUTATION_PROBABILITY) {
       if(Math.random() > 0.5) {
-        population[i] = pushMutate(population[i]);
+        population[i] = swapMutate(population[i]);
       } else {
-        population[i] = doMutate(population[i]);
+        population[i] = flipMutate(population[i]);
       }
       i--;
     }
@@ -154,7 +154,7 @@ function swap_seq(seq, p0, p1, q0, q1) {
   var seq3 = seq.slice(q1, seq.length);
   return seq1.concat(seq2).concat(seq3);
 }
-function doMutate(seq) {
+function flipMutate(seq) {
   mutationTimes++;
   // m and n refers to the actual index in the array
   // m range from 0 to length-2, n range from 2...length-m
@@ -168,7 +168,7 @@ function doMutate(seq) {
     }
     return seq;
 }
-function pushMutate(seq) {
+function swapMutate(seq) {
   mutationTimes++;
   var m,n;
   do {
