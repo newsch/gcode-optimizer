@@ -49,10 +49,7 @@ class GCodeParser:
             if self.p_pen_up.match(l):
                 if previous_node is not None:
                     g.add_node(previous_node)
-                    g.add_edge(previous_node, segment_start_node, pen_down=True, d=distance(
-                        previous_node,
-                        segment_start_node
-                    ))
+                    g.add_edge(previous_node, segment_start_node, pen_down=True)
                 continue
             lin_int_match = self.p_lin_int.match(l)
             if lin_int_match:
@@ -70,6 +67,9 @@ def complete_graph_from_nodes(nodes) -> nx.Graph:
     if len(nodes) > 1:
         edges = combinations(nodes, 2)
         g.add_edges_from(edges, pen_down=False)
+        for e in g.edges():
+            u, v = e
+            g[u][v]['d']=distance(u, v)
     return g
 
 
