@@ -211,7 +211,11 @@ function getCurrentBest() {
 }
 function setRoulette() {
   //calculate all the fitness
-  for(var i=0; i<values.length; i++) { fitnessValues[i] = 1.0/values[i]; }
+  //make sure that no fitnessValues are negative
+  var smallest = Math.min(...values);
+  for(var i=0; i<values.length; i++) { fitnessValues[i] = 1.0/(values[i] - smallest + 1); }
+
+
   //set the roulette
   var sum = 0;
   for(var i=0; i<fitnessValues.length; i++) { sum += fitnessValues[i]; }
