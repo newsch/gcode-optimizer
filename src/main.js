@@ -2,6 +2,7 @@ var canvas, ctx;
 var WIDTH, HEIGHT;
 var points = [];
 var constrainedLines = [];
+var constrainedPairs = [];
 var running;
 var ran = false;
 var validFile = false;
@@ -192,11 +193,18 @@ r.onload = function(e) {
 	}
 
   // find pairs of g1s
+  // constrainedLines is a list of pairs of points
   constrainedLines = [];
+  // constrainedPairs a dictionary that contains the connected point
+  constrainedPairs = {};
   for (var i = 0; i<verts.length - 1; i++) {
     if (verts[i].isG1 == true) {
       if (verts[i+1].isG1) {
         constrainedLines.push([verts[i], verts[i+1]])
+        pair1 = [verts[i].x, verts[i].y]
+        pair2 = [verts[i+1].x, verts[i+1].y]
+        constrainedPairs[pair1] = pair2;
+        constrainedPairs[pair2] = pair1;
       }
     }
   }
@@ -210,7 +218,6 @@ r.onload = function(e) {
       prev.followingLines.concat(current.followingLines)
       verts[i] = false
     }
-
   }
 
 
