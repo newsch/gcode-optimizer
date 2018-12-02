@@ -11,37 +11,20 @@ function GANextGeneration() {
   crossover();
   mutation();
 
-  //if(UNCHANGED_GENS > POPULATION_SIZE + ~~(points.length/10)) {
-    //MUTATION_PROBABILITY = 0.05;
-    //if(doPreciseMutate) {
-    //  best = preciseMutate(best);
-    //  best = preciseMutate1(best);
-    //  if(evaluate(best) < bestValue) {
-    //    bestValue = evaluate(best);
-    //    UNCHANGED_GENS = 0;
-    //    doPreciseMutate = true;
-    //  } else {
-    //    doPreciseMutate = false;
-    //  }
-    //}
-  //} else {
-    //doPreciseMutate = 1;
-    //MUTATION_PROBABILITY = 0.01;
-  //}
   setBestValue();
 }
 function tribulate() {
   //for(var i=0; i<POPULATION_SIZE; i++) {
   for(var i=population.length>>1; i<POPULATION_SIZE; i++) {
     population[i] = randomIndivial(points.length);
-  }	
+  }
 }
 function selection() {
   var parents = new Array();
   var initnum = 4;
   parents.push(population[currentBest.bestPosition]);
-  parents.push(doMutate(best.clone()));
-  parents.push(pushMutate(best.clone()));
+  parents.push(flipMutate(best.clone()));
+  parents.push(swapMutate(best.clone()));
   parents.push(best.clone());
 
   setRoulette();
@@ -56,32 +39,13 @@ function crossover() {
     if( Math.random() < CROSSOVER_PROBABILITY ) {
       queue.push(i);
     }
-  } 
+  }
   queue.shuffle();
   for(var i=0, j=queue.length-1; i<j; i+=2) {
     doCrossover(queue[i], queue[i+1]);
-    //oxCrossover(queue[i], queue[i+1]);
   }
 }
-//function oxCrossover(x, y) {	
-//  //var px = population[x].roll();
-//  //var py = population[y].roll();
-//  var px = population[x].slice(0);
-//  var py = population[y].slice(0);
 
-//  var rand = randomNumber(points.length-1) + 1;
-//  var pre_x = px.slice(0, rand);
-//  var pre_y = py.slice(0, rand);
-
-//  var tail_x = px.slice(rand, px.length);
-//  var tail_y = py.slice(rand, py.length);
-
-//  px = tail_x.concat(pre_x);
-//  py = tail_y.concat(pre_y);
-
-//  population[x] = pre_y.concat(px.reject(pre_y));
-//  population[y] = pre_x.concat(py.reject(pre_x));
-//}
 function doCrossover(x, y) {
   child1 = getChild('next', x, y);
   child2 = getChild('previous', x, y);
@@ -100,7 +64,7 @@ function getChild(fun, x, y) {
     dy = py[fun](py.indexOf(c));
     px.deleteByValue(c);
     py.deleteByValue(c);
-    c = dis[c][dx] < dis[c][dy] ? dx : dy;
+    c = costs[c][dx] < costs[c][dy] ? dx : dy;
     solution.push(c);
   }
   return solution;
@@ -109,52 +73,16 @@ function mutation() {
   for(var i=0; i<POPULATION_SIZE; i++) {
     if(Math.random() < MUTATION_PROBABILITY) {
       if(Math.random() > 0.5) {
-        population[i] = pushMutate(population[i]);
+        population[i] = swapMutate(population[i]);
       } else {
-        population[i] = doMutate(population[i]);
+        population[i] = flipMutate(population[i]);
       }
       i--;
     }
   }
 }
-function preciseMutate(orseq) {  
-  var seq = orseq.clone();
-  if(Math.random() > 0.5){
-    seq.reverse();
-  }
-  var bestv = evaluate(seq);
-  for(var i=0; i<(seq.length>>1); i++) {
-    for(var j=i+2; j<seq.length-1; j++) {
-      var new_seq = swap_seq(seq, i,i+1,j,j+1);
-      var v = evaluate(new_seq);
-      if(v < bestv) {bestv = v, seq = new_seq; };
-    }
-  }
-  //alert(bestv);
-  return seq;
-}
-function preciseMutate1(orseq) {  
-  var seq = orseq.clone();
-  var bestv = evaluate(seq);
 
-  for(var i=0; i<seq.length-1; i++) {
-    var new_seq = seq.clone();
-    new_seq.swap(i, i+1);
-    var v = evaluate(new_seq);
-    if(v < bestv) {bestv = v, seq = new_seq; };
-  }
-  //alert(bestv);
-  return seq;
-}
-function swap_seq(seq, p0, p1, q0, q1) {
-  var seq1 = seq.slice(0, p0);
-  var seq2 = seq.slice(p1+1, q1);
-  seq2.push(seq[p0]);
-  seq2.push(seq[p1]);
-  var seq3 = seq.slice(q1, seq.length);
-  return seq1.concat(seq2).concat(seq3);
-}
-function doMutate(seq) {
+function flipMutate(seq) {
   mutationTimes++;
   // m and n refers to the actual index in the array
   // m range from 0 to length-2, n range from 2...length-m
@@ -168,7 +96,7 @@ function doMutate(seq) {
     }
     return seq;
 }
-function pushMutate(seq) {
+function swapMutate(seq) {
   mutationTimes++;
   var m,n;
   do {
@@ -183,16 +111,22 @@ function pushMutate(seq) {
 }
 function setBestValue() {
   for(var i=0; i<population.length; i++) {
-    values[i] = evaluate(population[i]);
+    values[i] = evaluate(population[i], costs);
   }
   currentBest = getCurrentBest();
   if(bestValue === undefined || bestValue > currentBest.bestValue) {
     best = population[currentBest.bestPosition].clone();
     bestValue = currentBest.bestValue;
+    bestActualDistance = evaluate(best, distances)
     UNCHANGED_GENS = 0;
   } else {
     UNCHANGED_GENS += 1;
   }
+}
+
+// Calculates the actual distance along a given path
+function calculateActualDistance(path) {
+  return 5;
 }
 function getCurrentBest() {
   var bestP = 0,
@@ -211,7 +145,11 @@ function getCurrentBest() {
 }
 function setRoulette() {
   //calculate all the fitness
-  for(var i=0; i<values.length; i++) { fitnessValues[i] = 1.0/values[i]; }
+  //make sure that no fitnessValues are negative
+  var smallest = Math.min(...values);
+  for(var i=0; i<values.length; i++) { fitnessValues[i] = 1.0/(values[i] - smallest + 1); }
+
+
   //set the roulette
   var sum = 0;
   for(var i=0; i<fitnessValues.length; i++) { sum += fitnessValues[i]; }
@@ -233,20 +171,48 @@ function randomIndivial(n) {
   }
   return a.shuffle();
 }
-function evaluate(indivial) {
-  var sum = dis[indivial[0]][indivial[indivial.length - 1]];
+function evaluate(indivial, costMatrix) {
+  var sum = costMatrix[indivial[0]][indivial[indivial.length - 1]];
   for(var i=1; i<indivial.length; i++) {
-    sum += dis[indivial[i]][indivial[i-1]];
+    sum += costMatrix[indivial[i]][indivial[i-1]];
   }
   return sum;
 }
 function countDistances() {
   var length = points.length;
-  dis = new Array(length);
+  costs = new Array(length);
+  distances = new Array(length);
   for(var i=0; i<length; i++) {
-    dis[i] = new Array(length);
+    costs[i] = new Array(length);
+    distances[i] = new Array(length);
     for(var j=0; j<length; j++) {
-      dis[i][j] = ~~distance(points[i], points[j]); 
+      // Check if the two points are already connected by a line
+
+      if (areConnected(points[i], points[j]))  {
+        // we give a big negative weight so that the algorithm has an incentive
+        // to use this path
+        costs[i][j] = -1000;
+      } else {
+        costs[i][j] = ~~distance(points[i], points[j]);
+      }
+      distances[i][j] = ~~distance(points[i], points[j]);
     }
   }
+}
+
+// returns true if point1 and point2 are connected in the original gcode
+function areConnected(point1, point2) {
+  p1 = [point1.x, point1.y];
+  p2 = [point2.x, point2.y];
+  // If constrainedPairs doesnt contain p1
+  if(!constrainedPairs[p1]) {
+    // then its obviously not part of a pair
+    return false
+  }
+  return equal(constrainedPairs[p1], p2);
+}
+
+// returns true if two point pairs are the same
+function equal(p1, p2) {
+  return p1[0] === p2[0] && p1[1] === p2[1];
 }
