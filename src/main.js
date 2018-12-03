@@ -1,6 +1,9 @@
 var canvas, ctx;
 var WIDTH, HEIGHT;
 var points = [];
+var path = [];
+var start;
+var end;
 var constrainedLines = [];
 var constrainedPairs = [];
 var running;
@@ -22,6 +25,7 @@ var costs;
 // this contains the actual distance between points
 var distances;
 var bestValue, best, bestActualDistance;
+var bestPath
 var currentGeneration;
 var currentBest;
 var population;
@@ -260,17 +264,17 @@ r.onload = function(e) {
 		return false;
 	}
 
-console.log('best',best);
-console.log(points[best[0]]);
+console.log('bestPath',bestPath);
+console.log(points[bestPath[0]]);
 
 	// put all the lines back together in the best order
 	var fout = '';
 	for (var c=0; c<priorToG0.length; c++) {
 		fout += priorToG0[c] + '\n';
 	}
-	for (var c=0; c<best.length; c++) {
-		for (var n=0; n<points[best[c]].followingLines.length; n++) {
-			fout += points[best[c]].followingLines[n] + '\n';
+	for (var c=0; c<bestPath.length; c++) {
+		for (var n=0; n<points[bestPath[c]].followingLines.length; n++) {
+			fout += points[bestPath[c]].followingLines[n] + '\n';
 		}
 	}
 	for (var c=0; c<eof.length; c++) {
@@ -316,6 +320,7 @@ function initData() {
 
   bestValue = undefined;
   best = [];
+  bestPath = [];
   currentGeneration = 0;
   currentBest;
   population = []; //new Array(POPULATION_SIZE);
@@ -344,7 +349,7 @@ function drawLines(array) {
   for(var i=1; i<array.length; i++) {
     ctx.lineTo( points[array[i]].x, points[array[i]].y )
   }
-  ctx.lineTo(points[array[0]].x, points[array[0]].y);
+  //ctx.lineTo(points[array[0]].x, points[array[0]].y);
 
   ctx.stroke();
   ctx.closePath();
@@ -395,8 +400,8 @@ function draw() {
     }
 
 	// draw the path
-    if(best.length === points.length) {
-      drawLines(best);
+    if(bestPath.length === points.length) {
+      drawLines(bestPath);
     }
 
     drawConstrainedLines(constrainedLines)

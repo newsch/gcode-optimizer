@@ -1,7 +1,10 @@
 function GAInitialize() {
+  path = points.slice(1,points.length-1)
+  start = points[0]
+  end = points[points.length]
   countDistances();
   for(var i=0; i<POPULATION_SIZE; i++) {
-    population.push(randomIndivial(points.length));
+    population.push(randomIndivial(path.length));
   }
   setBestValue();
 }
@@ -16,7 +19,7 @@ function GANextGeneration() {
 function tribulate() {
   //for(var i=0; i<POPULATION_SIZE; i++) {
   for(var i=population.length>>1; i<POPULATION_SIZE; i++) {
-    population[i] = randomIndivial(points.length);
+    population[i] = randomIndivial(path.length);
   }
 }
 function selection() {
@@ -110,12 +113,16 @@ function swapMutate(seq) {
   return s2.concat(s1).concat(s3).clone();
 }
 function setBestValue() {
+  var fullPath = []
   for(var i=0; i<population.length; i++) {
-    values[i] = evaluate(population[i], costs);
+    fullPath = [0].concat(population[i], population[i].length+1);
+    values[i] = evaluate(fullPath, costs);
   }
   currentBest = getCurrentBest();
   if(bestValue === undefined || bestValue > currentBest.bestValue) {
     best = population[currentBest.bestPosition].clone();
+    // bestPath contains start and end points; best doesn't
+    bestPath = [0].concat(best, best.length+1)
     bestValue = currentBest.bestValue;
     bestActualDistance = evaluate(best, distances)
     UNCHANGED_GENS = 0;
@@ -166,15 +173,16 @@ function wheelOut(rand) {
 }
 function randomIndivial(n) {
   var a = [];
-  for(var i=0; i<n; i++) {
+  for(var i=1; i<=n; i++) {
     a.push(i);
   }
   return a.shuffle();
 }
-function evaluate(indivial, costMatrix) {
-  var sum = costMatrix[indivial[0]][indivial[indivial.length - 1]];
-  for(var i=1; i<indivial.length; i++) {
-    sum += costMatrix[indivial[i]][indivial[i-1]];
+function evaluate(individual, costMatrix) {
+  //var sum = costMatrix[individual[0]][individual[individual.length - 1]];
+  var sum = 0;
+  for(var i=1; i<individual.length; i++) {
+    sum += costMatrix[individual[i]][individual[i-1]];
   }
   return sum;
 }
