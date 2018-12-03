@@ -2,6 +2,7 @@ import networkx as nx
 import regex as re
 from math import sqrt
 from itertools import combinations
+from copy import deepcopy
 
 
 class GCodeParser:
@@ -31,31 +32,36 @@ class GCodeParser:
         drawing_graph = self.get_solid_graph(lines)
         complete_graph = complete_graph_from_nodes(drawing_graph.nodes())
         for e in drawing_graph.edges:
-            complete_graph.edges[e]['pen_down'] = True
-        return complete_graph
+            complete_graph.add_edges_from(drawing_graph.edges)
+            # complete_graph.edges[e]['pen_down'] = True
+        return drawing_graph
 
     def get_solid_graph(self, lines) -> nx.Graph:
         g = nx.Graph()
 
         previous_node = None
         segment_start_node = 0
+        intermediate_points = []
         for l in lines:
-            if self.p_pen_down.match(l):
-                if previous_node is None:
-                    raise Exception("file contains pen down message before positioning")
-                segment_start_node = previous_node
-                g.add_node(previous_node)
-                continue
-            if self.p_pen_up.match(l):
-                if previous_node is not None:
-                    g.add_node(previous_node)
-                    g.add_edge(previous_node, segment_start_node, pen_down=True)
-                continue
             lin_int_match = self.p_lin_int.match(l)
             if lin_int_match:
                 x = float(lin_int_match.group(1))
                 y = float(lin_int_match.group(2))
                 previous_node = x, y
+                intermediate_points.append((x, y))
+            elif self.p_pen_down.match(l):
+                if previous_node is None:
+                    raise Exception("file contains pen down message before positioning")
+                segment_start_node = previous_node
+                g.add_node(previous_node)
+                intermediate_points = []
+            elif self.p_pen_up.match(l):
+                if previous_node is not None:
+                    g.add_node(previous_node)
+                    g.add_edge(
+                        previous_node, segment_start_node, pen_down=True,
+                        intermediate_points=deepcopy(intermediate_points[:-1])
+                    )
 
         return g
 
@@ -66,7 +72,7 @@ def complete_graph_from_nodes(nodes) -> nx.Graph:
     g.add_nodes_from(nodes)
     if len(nodes) > 1:
         edges = combinations(nodes, 2)
-        g.add_edges_from(edges, pen_down=False)
+        g.add_edges_from(edges, pen_down=False, intermediate_points=[])
         for e in g.edges():
             u, v = e
             g[u][v]['d']=distance(u, v)
