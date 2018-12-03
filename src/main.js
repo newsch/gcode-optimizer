@@ -203,18 +203,30 @@ r.onload = function(e) {
 	}
 
   // find pairs of g1s
-  // constrainedLines is a list of pairs of points
-  constrainedLines = [];
+
   // constrainedPairs a dictionary that contains the connected point
   constrainedPairs = {};
   for (var i = 0; i<verts.length - 1; i++) {
     if (verts[i].isG1 == true) {
       if (verts[i+1].isG1) {
-        constrainedLines.push([verts[i], verts[i+1]])
         pair1 = [verts[i].x, verts[i].y]
         pair2 = [verts[i+1].x, verts[i+1].y]
         constrainedPairs[pair1] = pair2;
         constrainedPairs[pair2] = pair1;
+      }
+    }
+  }
+
+  // find pairs of g1s
+  // constrainedLines is a list of pairs of points
+  constrainedLines = [];
+  for (var i = 0; i<verts.length - 1; i++) {
+    if (verts[i].isG1 == true) {
+      constrainedLines.push([verts[i]]);
+      i++;
+      while((i<verts.length-1) && verts[i].isG1) {
+        constrainedLines[constrainedLines.length-1].push(verts[i])
+        i++;
       }
     }
   }
@@ -230,8 +242,24 @@ r.onload = function(e) {
     }
   }
 
+  points = verts.filter(Boolean);
 
-	points = verts.filter(Boolean);
+  // group together g1s if there are more than 2 g1s in a row
+  for (var i = points.length-2; i>0; i--) {
+    current = points[i];
+    after = points[i+1];
+    before = points[i-1];
+    // if the point is a g1's and surrounded by g1's
+    // after can also be false if it was just deleted
+    if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
+      // add it the the following lines of the before point
+      before.followingLines.concat(current.followingLines)
+      // delete this point
+      points[i] = false;
+    }
+  }
+
+	points = points.filter(Boolean);
 	draw();
 
 	validFile = true;
@@ -355,19 +383,19 @@ function drawLines(array) {
   ctx.closePath();
 }
 
-function drawConstrainedLines(pairs) {
+function drawConstrainedLines(paths) {
     ctx.strokeStyle = '#404040';
     ctx.lineWidth = 2;
     ctx.beginPath();
 
     // move to the first point in pairs
-    for(var i = 0; i<pairs.length; i++) {
-      start = pairs[i][0];
-      end = pairs[i][1];
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
+    for(var i = 0; i<paths.length; i++) {
+      var path = paths[i];
+      ctx.moveTo(path[0].x, path[0].y);
+      for(var j = 0; j < path.length; j++) {
+        ctx.lineTo(path[j].x, path[j].y);
+      }
       ctx.stroke();
-      ctx.closePath();
     }
 }
 
