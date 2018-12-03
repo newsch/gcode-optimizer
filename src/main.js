@@ -77,6 +77,9 @@ r.onload = function(e) {
 
 	console.log(nl);
 
+  // make sure we start at 0, 0
+  verts.push({x:0,y:0,followingLines:['g0 x0 y0'], isG1: false});
+
 	// loop through each newline
 	for (var c=0; c<nl.length; c++) {
 
