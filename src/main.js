@@ -79,13 +79,24 @@ r.onload = function(e) {
 	// split the file by newlines
 	var nl = r.result.split('\n');
 
-	console.log(nl);
+
+  // store header commands at top of file
+  var c = 0;
+  while (c < nl.length) {
+    nl[c] = nl[c].toLowerCase();
+    var command = nl[c].substr(0, 3);
+    if (command == 'g0 ' || command == 'g1 ') {
+      break;
+    }
+    priorToG0.push(nl[c]);
+    c++;
+  }
 
   // make sure we start at 0, 0
   verts.push({x:0,y:0,followingLines:['g0 x0 y0'], isG1: false});
 
 	// loop through each newline
-	for (var c=0; c<nl.length; c++) {
+	for (; c<nl.length; c++) {
 
 		// make everything lowercase
 		nl[c] = nl[c].toLowerCase();
@@ -102,15 +113,10 @@ r.onload = function(e) {
 			// check if x and y exist for this line
 			if (x !== false && y !== false) {
 
-				if (verts.length > 0) {
-
-					// verts has entries, so we need to add otherCommands to the followingLines for the previous entry in verts
-					for (var cmd=0; cmd<otherCommands.length; cmd++) {
-						verts[verts.length-1].followingLines.push(otherCommands[cmd]);
-					}
-
+				// verts has entries, so we need to add otherCommands to the followingLines for the previous entry in verts
+				for (var cmd=0; cmd<otherCommands.length; cmd++) {
+					verts[verts.length-1].followingLines.push(otherCommands[cmd]);
 				}
-
 
 				// this G0 has a valid X or Y coordinate, add it to verts with itself (the G0) as the first entry in followingLines
 				verts.push({x:x,y:y,followingLines:[nl[c]], isG1: command == 'g1 '});
@@ -126,13 +132,6 @@ r.onload = function(e) {
 			// add this line to otherCommands
 			otherCommands.push(nl[c]);
 		}
-
-		if (verts.length == 0) {
-			// this holds lines prior to the first G0 for use later
-			priorToG0.push(nl[c]);
-
-		}
-
 	}
 
 	console.log(otherCommands);
