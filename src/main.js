@@ -203,22 +203,9 @@ r.onload = function(e) {
 
 	}
 
-  // find pairs of g1s
 
-  // constrainedPairs a dictionary that contains the connected point
-  constrainedPairs = {};
-  for (var i = 0; i<verts.length - 1; i++) {
-    if (verts[i].isG1 == true) {
-      if (verts[i+1].isG1) {
-        pair1 = [verts[i].x, verts[i].y]
-        pair2 = [verts[i+1].x, verts[i+1].y]
-        constrainedPairs[pair1] = pair2;
-        constrainedPairs[pair2] = pair1;
-      }
-    }
-  }
 
-  // find pairs of g1s
+
   // constrainedLines is a list of pairs of points
   constrainedLines = [];
   for (var i = 0; i<verts.length - 1; i++) {
@@ -247,6 +234,20 @@ r.onload = function(e) {
     }
   }
   verts = verts.filter(Boolean);
+
+  // find pairs of g1s
+  // constrainedPairs a dictionary that contains the connected point
+  constrainedPairs = {};
+  for (var i = 0; i<verts.length - 1; i++) {
+    if (verts[i].isG1 == true) {
+      if (verts[i+1].isG1) {
+        pair1 = [verts[i].x, verts[i].y]
+        pair2 = [verts[i+1].x, verts[i+1].y]
+        constrainedPairs[pair1] = pair2;
+        constrainedPairs[pair2] = pair1;
+      }
+    }
+  }
 
   // remove excess nodes
   for (var i = 1; i<verts.length - 1; i++) {
