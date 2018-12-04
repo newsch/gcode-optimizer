@@ -231,35 +231,33 @@ r.onload = function(e) {
     }
   }
 
-  // remove excess nodes
-  for (var i = 1; i<verts.length - 1; i++) {
-    current = verts[i];
-    prev = verts[i-1];
-    // if the previous point is the same point
-    if (prev.x == current.x && prev.y == current.y) {
-      prev.followingLines = prev.followingLines.concat(current.followingLines)
-      verts[i] = false
-    }
-  }
-
-  points = verts.filter(Boolean);
-
   // group together g1s if there are more than 2 g1s in a row
-  for (var i = points.length-2; i>0; i--) {
-    current = points[i];
-    after = points[i+1];
-    before = points[i-1];
+  for (var i = verts.length-2; i>0; i--) {
+    current = verts[i];
+    after = verts[i+1];
+    before = verts[i-1];
     // if the point is a g1's and surrounded by g1's
     // after can also be false if it was just deleted
     if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
       // add it the the following lines of the before point
       before.followingLines = before.followingLines.concat(current.followingLines)
       // delete this point
-      points[i] = false;
+      verts[i] = false;
+    }
+  }
+  verts = verts.filter(Boolean);
+
+  // remove excess nodes
+  for (var i = 1; i<verts.length - 1; i++) {
+    current = verts[i];
+    prev = verts[i-1];
+    // if the previous point is the same point
+    if (prev.x == current.x && prev.y == current.y) {
+      verts[i-1] = false
     }
   }
 
-	points = points.filter(Boolean);
+  points = verts.filter(Boolean);
 	draw();
 
 	validFile = true;
@@ -295,16 +293,49 @@ r.onload = function(e) {
 console.log('bestPath',bestPath);
 console.log(points[bestPath[0]]);
 
+var UP = "M03 S525"
+var DOWN = "M03 S975"
 	// put all the lines back together in the best order
 	var fout = '';
+  var penUp = true;
 	for (var c=0; c<priorToG0.length; c++) {
 		fout += priorToG0[c] + '\n';
 	}
-	for (var c=0; c<bestPath.length; c++) {
-		for (var n=0; n<points[bestPath[c]].followingLines.length; n++) {
-			fout += points[bestPath[c]].followingLines[n] + '\n';
-		}
+
+  // turn points into gcode commands
+	for (var c=0; c<bestPath.length-1; c++) {
+    var point = points[bestPath[c]];
+    var nextPoint = points[bestPath[c+1]];
+    // if pen is up, then we write a g0
+    if (penUp) {
+      fout += 'g0 ' + point.followingLines[0].slice(4) + '\n';
+    // if pen is down, write a g1
+    } else {
+      fout += 'g1 ' + point.followingLines[0].slice(4) + '\n';
+    }
+
+    // if next point is paired with this point (line should be drawn)
+    if (areConnected(point, nextPoint)) {
+      // make sure pen is down
+      if (penUp) {
+        penUp = false;
+        fout += DOWN + '\n';
+      }
+    // if the next point is not connected with this point
+    } else {
+      // make sure pen is up
+      if (!penUp) {
+        penUp = true;
+        fout += UP + '\n';
+      }
+    }
 	}
+  // print out followingLines of last point (this prints out end of gcode file)
+  var lastPoint = points[bestPath[bestPath.length-1]];
+	for (var n=0; n<lastPoint.followingLines.length; n++) {
+		fout += lastPoint.followingLines[n] + '\n';
+	}
+
 	for (var c=0; c<eof.length; c++) {
 		fout += eof[c] + '\n';
 	}
