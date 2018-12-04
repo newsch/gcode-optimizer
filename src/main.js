@@ -63,8 +63,8 @@ function getXY(s) {
 	return [x,y];
 }
 
-var priorToG0 = [];
-var eof = [];
+var priorToG0;
+var eof;
 
 gc.addEventListener('change', function(e) {
 var r = new FileReader();
@@ -72,6 +72,8 @@ r.readAsText(gc.files[0]);
 r.onload = function(e) {
 
 	initData();
+  priorToG0 = [];
+  eof = [];
 
 	var otherCommands = [];
 	var verts = [];
@@ -292,6 +294,8 @@ r.onload = function(e) {
 console.log('bestPath',bestPath);
 console.log(points[bestPath[0]]);
 
+//// ---------- EXPORT -------------
+
 var UP = "M03 S525"
 var DOWN = "M03 S975"
 	// put all the lines back together in the best order
@@ -307,10 +311,20 @@ var DOWN = "M03 S975"
     var nextPoint = points[bestPath[c+1]];
     // if pen is up, then we write a g0
     if (penUp) {
-      fout += 'g0 ' + point.followingLines[0].slice(4) + '\n';
+      fout += 'g0 ' + point.followingLines[0].slice(3) + '\n';
     // if pen is down, write a g1
     } else {
-      fout += 'g1 ' + point.followingLines[0].slice(4) + '\n';
+      fout += 'g1 ' + point.followingLines[0].slice(3) + '\n';
+      // there may be multiple g1's chained together
+      // if so, add those to the output
+      for (var d=1; d<point.followingLines.length; d++) {
+        var line = point.followingLines[d];
+        // print it if the line is not a penup or pendown
+        var command = line.toLowerCase().substr(0, 3);
+        if (command != 'm03' && command != 'm04') {
+          fout += line + '\n';
+        }
+      }
     }
 
     // if next point is paired with this point (line should be drawn)
