@@ -237,7 +237,7 @@ r.onload = function(e) {
     prev = verts[i-1];
     // if the previous point is the same point
     if (prev.x == current.x && prev.y == current.y) {
-      prev.followingLines.concat(current.followingLines)
+      prev.followingLines = prev.followingLines.concat(current.followingLines)
       verts[i] = false
     }
   }
@@ -253,7 +253,7 @@ r.onload = function(e) {
     // after can also be false if it was just deleted
     if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
       // add it the the following lines of the before point
-      before.followingLines.concat(current.followingLines)
+      before.followingLines = before.followingLines.concat(current.followingLines)
       // delete this point
       points[i] = false;
     }
@@ -326,6 +326,13 @@ console.log(points[bestPath[0]]);
     }
 
   });
+
+  var canvas = $('#canvas')[0];
+  canvas.addEventListener('mousemove', function(e) {
+    var mousePos = getMousePos(canvas, e);
+    var message = 'Mouse position: ' + mousePos.x + ', ' + mousePos.y;
+    $('#mouse_position').text(message);
+  }, false);
 });
 
 function init() {
@@ -333,6 +340,14 @@ function init() {
   WIDTH = $('#canvas').width();
   HEIGHT = $('#canvas').height();
   setInterval(draw, 10);
+}
+
+function getMousePos(canvas, evt) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: evt.clientX - rect.left,
+    y: evt.clientY - rect.top
+  };
 }
 
 function initData() {
