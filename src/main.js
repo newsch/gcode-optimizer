@@ -255,7 +255,9 @@ r.onload = function(e) {
     prev = verts[i-1];
     // if the previous point is the same point
     if (prev.x == current.x && prev.y == current.y) {
-      verts[i-1] = false
+      if (!verts[i-1].isG1) {
+        verts[i-1] = false;
+      }
     }
   }
 
@@ -313,18 +315,27 @@ var DOWN = "M03 S975"
     // if pen is up, then we write a g0
     if (penUp) {
       fout += 'g0 ' + point.followingLines[0].slice(3) + '\n';
+      // if there is a following g1, put the down down
+      if (point.followingLines.length > 1) {
+        var command = point.followingLines[1].toLowerCase().substr(0, 3);
+        if (command == 'g1 ') {
+          penUp = false;
+          fout += DOWN + '\n';
+        }
+      }
     // if pen is down, write a g1
     } else {
       fout += 'g1 ' + point.followingLines[0].slice(3) + '\n';
-      // there may be multiple g1's chained together
-      // if so, add those to the output
-      for (var d=1; d<point.followingLines.length; d++) {
-        var line = point.followingLines[d];
-        // print it if the line is not a penup or pendown
-        var command = line.toLowerCase().substr(0, 3);
-        if (command != 'm03' && command != 'm04') {
-          fout += line + '\n';
-        }
+    }
+
+    // there may be multiple g1's chained together
+    // if so, add those to the output
+    for (var d=1; d<point.followingLines.length; d++) {
+      var line = point.followingLines[d];
+      // print it if the line is not a penup or pendown
+      var command = line.toLowerCase().substr(0, 3);
+      if (command != 'm03' && command != 'm04') {
+        fout += line + '\n';
       }
     }
 
