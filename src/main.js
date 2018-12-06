@@ -137,7 +137,6 @@ r.onload = function(e) {
 		}
 	}
 
-	console.log(otherCommands);
 
 	// add otherCommands to the followingLines for the last entry in verts
 	// this gets the lines after the last G0 in the file
