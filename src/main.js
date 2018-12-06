@@ -203,9 +203,6 @@ r.onload = function(e) {
 
 	}
 
-
-
-
   // constrainedLines is a list of pairs of points
   constrainedLines = [];
   for (var i = 0; i<verts.length - 1; i++) {
@@ -219,21 +216,21 @@ r.onload = function(e) {
     }
   }
 
-  // group together g1s if there are more than 2 g1s in a row
-  for (var i = verts.length-2; i>0; i--) {
-    current = verts[i];
-    after = verts[i+1];
-    before = verts[i-1];
-    // if the point is a g1's and surrounded by g1's
-    // after can also be false if it was just deleted
-    if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
-      // add it the the following lines of the before point
-      before.followingLines = before.followingLines.concat(current.followingLines)
-      // delete this point
-      verts[i] = false;
-    }
-  }
-  verts = verts.filter(Boolean);
+  // // group together g1s if there are more than 2 g1s in a row
+  // for (var i = verts.length-2; i>0; i--) {
+  //   current = verts[i];
+  //   after = verts[i+1];
+  //   before = verts[i-1];
+  //   // if the point is a g1's and surrounded by g1's
+  //   // after can also be false if it was just deleted
+  //   if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
+  //     // add it the the following lines of the before point
+  //     before.followingLines = before.followingLines.concat(current.followingLines)
+  //     // delete this point
+  //     verts[i] = false;
+  //   }
+  // }
+  // verts = verts.filter(Boolean);
 
   // find pairs of g1s
   // constrainedPairs a dictionary that contains the connected point
@@ -411,7 +408,7 @@ function initData() {
   POPULATION_SIZE = 30;
   ELITE_RATE = 0.3;
   CROSSOVER_PROBABILITY = 0.9;
-  MUTATION_PROBABILITY  = 0.01;
+  MUTATION_PROBABILITY  = 0.2;
   //OX_CROSSOVER_RATE = 0.05;
   UNCHANGED_GENS = 0;
   mutationTimes = 0;
@@ -503,7 +500,7 @@ function draw() {
       drawLines(bestPath);
     }
 
-    drawConstrainedLines(constrainedLines)
+    //drawConstrainedLines(constrainedLines)
   }
 
 }
