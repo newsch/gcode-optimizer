@@ -3,7 +3,7 @@ Array.prototype.shuffle = function() {
   for(var j, x, i = this.length-1; i; j = randomNumber(i), x = this[--i], this[i] = this[j], this[j] = x);
   return this;
 };
-Array.prototype.indexOf = function (value) {	
+Array.prototype.indexOf = function (value) {
   for(var i=0; i<this.length; i++) {
     if(this[i] === value) {
       return i;
@@ -63,7 +63,7 @@ function randomPoint() {
   var randomx = randomNumber(WIDTH);
   var randomy = randomNumber(HEIGHT);
   var randomPoint = new Point(randomx, randomy);
-  return randomPoint; 
+  return randomPoint;
 }
 function randomNumber(boundary) {
   return parseInt(Math.random() * boundary);
@@ -74,4 +74,26 @@ function distance(p1, p2) {
 }
 function euclidean(dx, dy) {
   return Math.sqrt(dx*dx + dy*dy);
+}
+
+// returns true if point1 and point2 are connected in the original gcode
+function areConnected(point1, point2, constrainedPairs) {
+  p1 = [point1.x, point1.y];
+  p2 = [point2.x, point2.y];
+  // If constrainedPairs doesnt contain p1
+  if(!constrainedPairs[p1]) {
+    // then its obviously not part of a pair
+    return false
+  }
+  return equal(constrainedPairs[p1], p2);
+}
+
+// returns true if two point pairs are the same
+function equal(p1, p2) {
+  return p1[0] === p2[0] && p1[1] === p2[1];
+}
+
+// takes a point object and returns its x, y pair
+function toPair(point) {
+  return [point.x, point.y];
 }

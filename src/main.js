@@ -71,18 +71,18 @@ r.onload = function(e) {
 }
 });
 
-  $('#start_btn').click(function() {
-    if(points.length >= 3) {
-      initData();
-      GAInitialize();
-      running = true;
-	ran = true;
-    } else {
-      alert("add some more points to the map!");
-    }
-  });
+$('#start_btn').click(function() {
+  if(points.length >= 3) {
+    initData();
+    GAInitialize();
+    running = true;
+    ran = true;
+  } else {
+    alert("add some more points to the map!");
+  }
+});
 
-  $('#save_btn').click(function() {
+$('#save_btn').click(function() {
 
 	if (ran === false) {
 		alert('you must first click Start/Restart to run the optimisation before saving the file');
@@ -96,90 +96,10 @@ r.onload = function(e) {
 		return false;
 	}
 
-console.log('bestPath',bestPath);
-console.log(points[bestPath[0]]);
-
 //// ---------- EXPORT -------------
 
-var UP = "M03 S525 \nG4 P1"
-var DOWN = "M03 S940 \nG4 P1"
-	// put all the lines back together in the best order
-	var fout = '';
-  var penUp = true;
-	for (var c=0; c<priorToG0.length; c++) {
-		fout += priorToG0[c] + '\n';
-	}
+  fout = generateGCode(priorToG0, bestPath, eof, constrainedPairs);
 
-  // turn points into gcode commands
-	for (var c=0; c<bestPath.length-1; c++) {
-    var point = points[bestPath[c]];
-    var nextPoint = points[bestPath[c+1]];
-    // if pen is up, then we write a g0
-    if (penUp) {
-      fout += 'g0 ' + point.followingLines[0].slice(3) + '\n';
-      // if there is a following g1, put the down down
-      if (point.followingLines.length > 1) {
-        var command = point.followingLines[1].toLowerCase().substr(0, 3);
-        if (command == 'g1 ') {
-          penUp = false;
-          fout += DOWN + '\n';
-        }
-      }
-    // if pen is down, write a g1
-    } else {
-      fout += 'g1 ' + point.followingLines[0].slice(3) + '\n';
-    }
-
-    // there may be multiple g1's chained together
-    // if so, add those to the output
-    for (var d=1; d<point.followingLines.length; d++) {
-      var text = point.followingLines[d];
-      // print it if the command is not a penup or pendown
-      var command = text.toLowerCase().substr(0, 3);
-      if (command != 'm03' && command != 'm04') {
-        fout += text + '\n';
-      }
-    }
-
-    // if next point is paired with this point (line should be drawn)
-    if (areConnected(point, nextPoint)) {
-      // make sure pen is down
-      if (penUp) {
-        penUp = false;
-        fout += DOWN + '\n';
-      }
-
-      // draw all points in between the two vertices
-      if ([toPair(point), toPair(nextPoint)] in chunks) {
-        var inBetweenPoints = chunks[[toPair(point), toPair(nextPoint)]];
-        for (var v=0; v<inBetweenPoints.length; v++) {
-          var text = inBetweenPoints[v].followingLines[0];
-          // print it if the command is not a penup or pendown
-          var command = text.toLowerCase().substr(0, 3);
-          if (command != 'm03' && command != 'm04') {
-            fout += text + '\n';
-          }
-        }
-      }
-
-    // if the next point is not connected with this point
-    } else {
-      // make sure pen is up
-      if (!penUp) {
-        penUp = true;
-        fout += UP + '\n';
-      }
-    }
-	}
-  // print out followingLines of last point (this prints out end of gcode file)
-  var lastPoint = points[bestPath[bestPath.length-1]];
-	for (var n=0; n<lastPoint.followingLines.length; n++) {
-		fout += lastPoint.followingLines[n] + '\n';
-	}
-
-	for (var c=0; c<eof.length; c++) {
-		fout += eof[c] + '\n';
-	}
 
 	var blob = new Blob([fout]);
 	var fn = gc.value;
@@ -326,9 +246,4 @@ function draw() {
 
 function clearCanvas() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
-}
-
-// takes a point object and returns its x, y pair
-function toPair(point) {
-  return [point.x, point.y];
 }

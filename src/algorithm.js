@@ -195,7 +195,7 @@ function countDistances() {
     for(var j=0; j<length; j++) {
       // Check if the two points are already connected by a line
 
-      if (areConnected(points[i], points[j]))  {
+      if (areConnected(points[i], points[j], constrainedPairs))  {
         // we give a big negative weight so that the algorithm has an incentive
         // to use this path
         costs[i][j] = -1000;
@@ -205,21 +205,4 @@ function countDistances() {
       distances[i][j] = ~~distance(points[i], points[j]);
     }
   }
-}
-
-// returns true if point1 and point2 are connected in the original gcode
-function areConnected(point1, point2) {
-  p1 = [point1.x, point1.y];
-  p2 = [point2.x, point2.y];
-  // If constrainedPairs doesnt contain p1
-  if(!constrainedPairs[p1]) {
-    // then its obviously not part of a pair
-    return false
-  }
-  return equal(constrainedPairs[p1], p2);
-}
-
-// returns true if two point pairs are the same
-function equal(p1, p2) {
-  return p1[0] === p2[0] && p1[1] === p2[1];
 }
