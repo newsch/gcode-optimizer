@@ -11,6 +11,7 @@ var ran = false;
 var validFile = false;
 var canvasMinX, canvasMinY;
 var doPreciseMutate;
+var chunks = {};
 
 var POPULATION_SIZE;
 var ELITE_RATE;
@@ -220,6 +221,9 @@ r.onload = function(e) {
   }
 
   // group together g1s if there are more than 2 g1s in a row
+  var betweenPoints = [];
+  chunks = {};
+  var endpoint = null;
   for (var i = verts.length-2; i>0; i--) {
     current = verts[i];
     after = verts[i+1];
@@ -227,10 +231,24 @@ r.onload = function(e) {
     // if the point is a g1's and surrounded by g1's
     // after can also be false if it was just deleted
     if (current.isG1 && (after.isG1 || after==false) && before.isG1) {
-      // add it the the following lines of the before point
-      before.followingLines = before.followingLines.concat(current.followingLines)
+      // if this is the start of a new line of g1s
+      if (endpoint == null) {
+        // save the endpoint
+        endpoint = after;
+      }
+      betweenPoints.push(current);
       // delete this point
       verts[i] = false;
+    } else {
+      // if we have been storing a chunk of g1's
+      if (betweenPoints.length > 0) {
+        // create a mapping from the endpoints to the g1s that go in the middle
+        // the leftmost pair (of the key) should be closest to the first item of the assosciated array
+        chunks[[toPair(endpoint), toPair(current)]] = betweenPoints;
+        chunks[[toPair(current), toPair(endpoint)]] = betweenPoints.slice().reverse();
+        endpoint = null;
+        betweenPoints = [];
+      }
     }
   }
   verts = verts.filter(Boolean);
@@ -299,8 +317,8 @@ console.log(points[bestPath[0]]);
 
 //// ---------- EXPORT -------------
 
-var UP = "M03 S525"
-var DOWN = "M03 S975"
+var UP = "M03 S525 \nG4 P1"
+var DOWN = "M03 S940 \nG4 P1"
 	// put all the lines back together in the best order
 	var fout = '';
   var penUp = true;
@@ -331,11 +349,11 @@ var DOWN = "M03 S975"
     // there may be multiple g1's chained together
     // if so, add those to the output
     for (var d=1; d<point.followingLines.length; d++) {
-      var line = point.followingLines[d];
-      // print it if the line is not a penup or pendown
-      var command = line.toLowerCase().substr(0, 3);
+      var text = point.followingLines[d];
+      // print it if the command is not a penup or pendown
+      var command = text.toLowerCase().substr(0, 3);
       if (command != 'm03' && command != 'm04') {
-        fout += line + '\n';
+        fout += text + '\n';
       }
     }
 
@@ -346,6 +364,20 @@ var DOWN = "M03 S975"
         penUp = false;
         fout += DOWN + '\n';
       }
+
+      // draw all points in between the two vertices
+      if ([toPair(point), toPair(nextPoint)] in chunks) {
+        var inBetweenPoints = chunks[[toPair(point), toPair(nextPoint)]];
+        for (var v=0; v<inBetweenPoints.length; v++) {
+          var text = inBetweenPoints[v].followingLines[0];
+          // print it if the command is not a penup or pendown
+          var command = text.toLowerCase().substr(0, 3);
+          if (command != 'm03' && command != 'm04') {
+            fout += text + '\n';
+          }
+        }
+      }
+
     // if the next point is not connected with this point
     } else {
       // make sure pen is up
@@ -510,4 +542,9 @@ function draw() {
 
 function clearCanvas() {
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
+}
+
+// takes a point object and returns its x, y pair
+function toPair(point) {
+  return [point.x, point.y];
 }
