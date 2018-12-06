@@ -220,3 +220,12 @@ function getXY(s) {
 
 	return [x,y];
 }
+
+// ------- This boilerplate code lets us use this file from both node and html
+if(typeof exports == "undefined"){
+    exports = this['Parser'] = {};
+}
+
+exports.Parser = {
+  parse: parse,
+};
