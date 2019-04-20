@@ -1,7 +1,7 @@
 // generates gcode files from a bestPath and a list of points
 
-const UP = "M03 S525 \nG4 P0.25"
-const DOWN = "M03 S940 \nG4 P0.5"
+const UP = "G1Z1"
+const DOWN = "G1Z-1"
 
 function generateGCode(priorToG0, bestPath, eof, constrainedPairs) {
   var fout = '';
