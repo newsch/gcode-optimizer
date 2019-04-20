@@ -101,13 +101,14 @@ $('#save_btn').click(function() {
   fout = generateGCode(priorToG0, bestPath, eof, constrainedPairs);
 
 
-	var blob = new Blob([fout]);
-	var fn = gc.value;
+  var blob = new Blob([fout]);
+  var fn = gc.value;
 	if (fn.substr(0,12) == 'C:\\fakepath\\') {
-		// remove that chrome/chromium fakepath
+    // remove that chrome/chromium fakepath
 		fn = fn.substr(12);
-	}
-	saveAs(blob, 'optimised_'+fn, true);
+  }
+  let [name, ext] = splitFileName(fn);
+	saveAs(blob, name + '_optimized'+ (ext ? ext : ""), true);
   });
 
   $('#stop_btn').click(function() {
@@ -116,7 +117,6 @@ $('#save_btn').click(function() {
     } else {
       running = false;
     }
-
   });
 
   var canvas = $('#canvas')[0];
@@ -126,6 +126,12 @@ $('#save_btn').click(function() {
     $('#mouse_position').text(message);
   }, false);
 });
+
+// returns [name, ext]
+function splitFileName(fileName) {
+  let p = fileName.lastIndexOf(".");
+  return [fileName.slice(0, p), fileName.slice(p)];
+}
 
 function init() {
   ctx = $('#canvas')[0].getContext("2d");
