@@ -16,10 +16,10 @@ function generateGCode(priorToG0, bestPath, eof, constrainedPairs) {
     var nextPoint = points[bestPath[c+1]];
     // if pen is up, then we write a g0
     if (penUp) {
-      fout += 'g0 ' + point.followingLines[0].slice(3) + '\n';
+      fout += 'G0 ' + point.followingLines[0].slice(3) + '\n';
     // if pen is down, write a g1
     } else {
-      fout += 'g1 ' + point.followingLines[0].slice(3) + '\n';
+      fout += 'G1 ' + point.followingLines[0].slice(3) + '\n';
     }
 
     // if next point is paired with this point (line should be drawn)
